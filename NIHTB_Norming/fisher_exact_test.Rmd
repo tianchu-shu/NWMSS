@@ -1,0 +1,99 @@
+---
+title: "Fisher's exact test"
+output: html_notebook
+---
+```{r setup, include=FALSE, echo=FALSE}
+library("knitr")
+getwd( )
+```
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+```{r}
+
+fisherfunc<- function(df){
+rv <- list()
+for(i in 1:nrow(df)){
+m<-matrix(as.integer(df[i,1:6]), 3)
+res <-fisher.test(m)
+rv[i] <-res$p.value[1]
+}
+
+df$pvalue <- unlist(rv)
+
+return(df)}
+
+```
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+library(readxl)
+library("writexl")
+
+setwd("C:/Users/tsb7592/Box/Baby Toolbox Operations/Analysis/handcoded_data/")
+data.files = list.files(pattern = "*.xlsx")
+
+for (i in 1:length(data.files)) {
+print(data.files[i])
+
+df1 <- read_excel(data.files[i], sheet=1)
+df2 <- read_excel(data.files[i], sheet=2)
+df3 <- read_excel(data.files[i], sheet=3)
+
+if (length(df1) ==7){
+next
+}
+
+df1 = fisherfunc(df1)
+df2 = fisherfunc(df2)
+df3= fisherfunc(df3)
+
+write_xlsx(list('40'=df1, '425'=df2, '45'=df3),  data.files[i])
+}
+
+```
+
+```{r}
+library(Matrix)
+library(data.table)
+  
+rd <- readRDS("R:/MSS/Research/NIHTB v3.0 Norming/DataOut-analysis/registration_data_distinct.rds")
+
+# Mapping -> converting the list to 
+# dataframe
+a <- data.frame(matrix(unlist(rd[[1]]), nrow=dim(rd[[1]])[2], byrow=TRUE),stringsAsFactors=FALSE)
+
+for (i in 2:length(rd)) {
+df <- data.frame(matrix(unlist(rd[[i]]), nrow=dim(rd[[i]])[2], byrow=TRUE),stringsAsFactors=FALSE)
+a <- rbind(a,df)
+}
+write.csv(a, file="registration_data_distinct.csv")
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+```{r}
+NarrowData_inflight <- readRDS("R:/MSS/Research/NIHTB v3.0 Norming/DataOut-analysis/NarrowData_inflight.RDS")
+
+al<- subset(NarrowData_inflight,  TestName== "AudLrn_norm")
+ls <- subset(NarrowData_inflight,  TestName== "LSWM_norm")
+osd <- subset(NarrowData_inflight,  TestName== "OSD_norm")
+vr <- subset(NarrowData_inflight,  TestName== "VR_norm")
+
+pv <- subset(NarrowData_inflight,  TestName== "PV_norm")
+
+write.csv(pv, file="PV_norm.csv")
+write.csv(vr, file="VR_norm.csv")
+
+or <- subset(NarrowData_inflight,  TestName== "OR_norm")
+write.csv(or, file="OR_norm.csv")
+
+
+write.csv(ls, file="LSWM_norm.csv")
+
+
+write.csv(al, file="AudLrn_norm.csv")
+write.csv(osd, file="OSD_norm.csv")
+```
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
