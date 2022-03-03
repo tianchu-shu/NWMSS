@@ -1,0 +1,163 @@
+---
+title: "sample weighing"
+author: "Tianchu Shu"
+date: "3/1/2022"
+output: pdf_document
+---
+
+```{r setup, index=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load the data
+
+```{r Load data}
+library(anesrake)
+
+df= read.csv(file ='C:/Users/tsb7592/Downloads/NIHTB_demoFinal.csv') # tianchu's path
+
+adult <- df[df$age>=18, ]
+kids <- df[df$age<18, ]
+kids <- kids[kids$highestEd != 'missing',]
+
+adult$region.race.c <- factor(adult$region.race.c)
+kids$region.race.c <- factor(kids$region.race.c)
+
+adult$highestEd <- factor(adult$highestEd)
+kids$highestEd <- factor(kids$highestEd)
+```
+## 7a adults
+```{r ad}
+
+adult$caseid <- 1:length(adult$age)
+
+sextarg <- c(.488, .512)
+rrtarg <- c(0.024, 0.111, 0.018, 0.012, 0.007, 0.005,
+            0.015, 0.151, 0.02, 0.007, 0.008, 0.001, 0.005,
+            0.062, 0.21, 0.065, 0.014, 0.015, 0.002, 0.001, 0.008,
+            0.062, 0.116, 0.01, 0.026, 0.015,  0.002, 0.007)
+
+rrtarg_v2 <- c(0.024, 0.111, 0.018, 0.012, 0.013,
+            0.015, 0.151, 0.02, 0.007, 0.008, 0.001, 0.005,
+            0.062, 0.21, 0.065, 0.014, 0.015, 0.002, 0.001, 0.008,
+            0.062, 0.116, 0.01, 0.026, 0.015,  0.002, 0.007)
+
+edutarg <- c(0.091, 0.241, 0.277, 0.391)
+
+names(sextarg) <- c("1.0", "2.0")
+names(rrtarg_v2) <-c("1.0-Any Hispanic",                     
+"1.0-Non-Hispanic White",               
+"1.0-Non-Hispanic Black",
+"1.0-Non-Hispanic Asian",
+"1.0-Non-Hispanic Other Single Race",
+"2.0-Any Hispanic",                     
+"2.0-Non-Hispanic White",               
+"2.0-Non-Hispanic Black",
+"2.0-Non-Hispanic Asian",
+"2.0-Non-Hispanic Other Single Race",
+"2.0-Non-Hispanic Biracial White/Black",
+"2.0-Non-Hispanic Other", 
+"3.0-Any Hispanic",                     
+"3.0-Non-Hispanic White",               
+"3.0-Non-Hispanic Black",
+"3.0-Non-Hispanic Asian",
+"3.0-Non-Hispanic Other Single Race",
+"3.0-Non-Hispanic Biracial White/Black",
+"3.0-Non-Hispanic Biracial White/Asian",
+"3.0-Non-Hispanic Other",   
+"4.0-Any Hispanic",                     
+"4.0-Non-Hispanic White",               
+"4.0-Non-Hispanic Black",
+"4.0-Non-Hispanic Asian",
+"4.0-Non-Hispanic Other Single Race",
+"4.0-Non-Hispanic Biracial White/Asian",
+"4.0-Non-Hispanic Other Multiracial")
+
+names(edutarg) <- c("less than high school graduate","high school graduate","some college","four year or higher degree" )
+
+targets <- list(sextarg, rrtarg_v2, edutarg)
+names(targets) <- c("sex", "region.race.c", 'highestEd')
+adult2 <- adult[complete.cases(adult),]
+
+outsave <- anesrake(targets, adult2, caseid=adult2$caseid, verbose=TRUE, pctlim = 0.01)
+#caseweights <- data.frame(cases=outsave$caseid, weights=outsave$weightvec)
+adult2$weights.7a <- outsave$weightvec
+
+summary(outsave)
+```
+
+## 7a. kids
+```{r kids, echo=TRUE}
+
+kids$caseid <- 1:length(kids$age)
+
+sextarg <- c(.511, .489)
+rrtarg <- c(0.032, 0.078, 0.018, 0.011, 0.012, 0.003,0.002,0.004,
+            0.026, 0.125, 0.024, 0.007, 0.005, 0.002, 0.001, 0.023,
+            0.092, 0.158, 0.073, 0.013, 0.028, 0.008, 0.004, 0.001, 0.01,
+            0.091, 0.082, 0.009, 0.019, 0.003, 0.006, 0.030)
+edutarg <- c(0.115, 0.276, 0.303, 0.306)
+
+names(sextarg) <- c("1", "2")
+names(rrtarg) <-c("1.0-Any Hispanic",                     
+"1.0-Non-Hispanic White",               
+"1.0-Non-Hispanic Black",
+"1.0-Non-Hispanic Asian",
+"1.0-Non-Hispanic Other Single Race",
+"1.0-Non-Hispanic Biracial White/Black",
+"1.0-Non-Hispanic Biracial White/Asian",
+"1.0-Non-Hispanic Other", 
+"2.0-Any Hispanic",                     
+"2.0-Non-Hispanic White",               
+"2.0-Non-Hispanic Black",
+"2.0-Non-Hispanic Asian",
+"2.0-Non-Hispanic Biracial White/Black",
+"2.0-Non-Hispanic Biracial White/Asian",
+"2.0-Non-Hispanic Biracial Black/Asian",
+"2.0-Non-Hispanic Other Multiracial", 
+"3.0-Any Hispanic",                     
+"3.0-Non-Hispanic White",               
+"3.0-Non-Hispanic Black",
+"3.0-Non-Hispanic Asian",
+"3.0-Non-Hispanic Other Single Race",
+"3.0-Non-Hispanic Biracial White/Black",
+"3.0-Non-Hispanic Biracial White/Asian",
+"3.0-Non-Hispanic Biracial Black/Asian",
+"3.0-Non-Hispanic Other Multiracial",   
+"4.0-Any Hispanic",                     
+"4.0-Non-Hispanic White",               
+"4.0-Non-Hispanic Black",
+"4.0-Non-Hispanic Asian",
+"4.0-Non-Hispanic Biracial White/Black",
+"4.0-Non-Hispanic Biracial White/Asian",
+"4.0-Non-Hispanic Other Multiracial")
+
+names(edutarg) <- c("less than high school graduate","high school graduate","some college","four year or higher degree" )
+
+targets <- list(sextarg, rrtarg, edutarg)
+names(targets) <- c("sex", "region.race.c", 'highestEd')
+
+outsave_ak <- anesrake(targets, kids, caseid=kids$caseid, verbose=TRUE, pctlim = 0.01)
+
+kids$weights <- outsave_ak$weightvec
+
+
+write.csv(kids,"C:/Users/tsb7592/Downloads/kids.csv", row.names = FALSE)
+```
+
+## 7b adults
+```{r ad}
+
+adult$caseid <- 1:length(adult$age)
+
+rgtarg <- c(.178, .207, .379, .236)
+names(rgtarg) <- c(1,2,3,4)
+
+targets <- list(rgtarg)
+names(targets) <- c("region")
+outsave_ab <- anesrake(targets, adult, caseid=adult$caseid, verbose=TRUE, pctlim = 0.01)
+
+adult2$weights.7b <- outsave_ab$weightvec
+write.csv(adult2,"C:/Users/tsb7592/Downloads/adults.csv", row.names = FALSE)
+```
+
