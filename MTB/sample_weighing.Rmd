@@ -28,9 +28,6 @@ kids$highestEd <- factor(kids$highestEd)
 ```
 ## 7a adults
 ```{r ad}
-
-adult$caseid <- 1:length(adult$age)
-
 sextarg <- c(.488, .512)
 rrtarg <- c(0.024, 0.111, 0.018, 0.012, 0.007, 0.005,
             0.015, 0.151, 0.02, 0.007, 0.008, 0.001, 0.005,
@@ -79,7 +76,7 @@ targets <- list(sextarg, rrtarg_v2, edutarg)
 names(targets) <- c("sex", "region.race.c", 'highestEd')
 adult2 <- adult[complete.cases(adult),]
 
-outsave <- anesrake(targets, adult2, caseid=adult2$caseid, verbose=TRUE, pctlim = 0.01)
+outsave <- anesrake(targets, adult2, caseid=adult2$FinalPIN, verbose=TRUE, pctlim = 0.01)
 #caseweights <- data.frame(cases=outsave$caseid, weights=outsave$weightvec)
 adult2$weights.7a <- outsave$weightvec
 
@@ -88,8 +85,6 @@ summary(outsave)
 
 ## 7a. kids
 ```{r kids, echo=TRUE}
-
-kids$caseid <- 1:length(kids$age)
 
 sextarg <- c(.511, .489)
 rrtarg <- c(0.032, 0.078, 0.018, 0.011, 0.012, 0.003,0.002,0.004,
@@ -137,7 +132,7 @@ names(edutarg) <- c("less than high school graduate","high school graduate","som
 targets <- list(sextarg, rrtarg, edutarg)
 names(targets) <- c("sex", "region.race.c", 'highestEd')
 
-outsave_ak <- anesrake(targets, kids, caseid=kids$caseid, verbose=TRUE, pctlim = 0.01)
+outsave_ak <- anesrake(targets, kids, caseid=kids$FinalPIN, verbose=TRUE, pctlim = 0.01)
 
 kids$weights <- outsave_ak$weightvec
 
@@ -147,15 +142,12 @@ write.csv(kids,"C:/Users/tsb7592/Downloads/kids.csv", row.names = FALSE)
 
 ## 7b adults
 ```{r ad}
-
-adult$caseid <- 1:length(adult$age)
-
 rgtarg <- c(.178, .207, .379, .236)
 names(rgtarg) <- c(1,2,3,4)
 
 targets <- list(rgtarg)
 names(targets) <- c("region")
-outsave_ab <- anesrake(targets, adult, caseid=adult$caseid, verbose=TRUE, pctlim = 0.01)
+outsave_ab <- anesrake(targets, adult, caseid=adult$FinalPIN, verbose=TRUE, pctlim = 0.01)
 
 adult2$weights.7b <- outsave_ab$weightvec
 write.csv(adult2,"C:/Users/tsb7592/Downloads/adults.csv", row.names = FALSE)
