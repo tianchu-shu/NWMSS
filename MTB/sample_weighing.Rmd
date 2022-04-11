@@ -1,7 +1,7 @@
 ---
 title: "sample weighing"
 author: "Tianchu Shu"
-date: "3/1/2022"
+date: "4/11/2022"
 output: pdf_document
 ---
 
@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r Load data}
 library(anesrake)
 
-df= read.csv(file ='C:/Users/tsb7592/Downloads/NIHTB_demoFinal.csv') # tianchu's path
+df= read.csv(file ='C:/Users/tsb7592/Downloads/NIHTB_demoFinal_April.csv') # tianchu's path
 
 adult <- df[df$age>=18, ]
 kids <- df[df$age<18, ]
@@ -76,7 +76,7 @@ targets <- list(sextarg, rrtarg_v2, edutarg)
 names(targets) <- c("sex", "region.race.c", 'highestEd')
 adult2 <- adult[complete.cases(adult),]
 
-outsave <- anesrake(targets, adult2, caseid=adult2$FinalPIN, verbose=TRUE, pctlim = 0.01)
+outsave <- anesrake(targets, adult2, caseid=adult2$FinalPIN, verbose=TRUE, pctlim = 0.01,cap=4 )
 #caseweights <- data.frame(cases=outsave$caseid, weights=outsave$weightvec)
 adult2$weights.7a <- outsave$weightvec
 
@@ -132,12 +132,12 @@ names(edutarg) <- c("less than high school graduate","high school graduate","som
 targets <- list(sextarg, rrtarg, edutarg)
 names(targets) <- c("sex", "region.race.c", 'highestEd')
 
-outsave_ak <- anesrake(targets, kids, caseid=kids$FinalPIN, verbose=TRUE, pctlim = 0.01)
+outsave_ak <- anesrake(targets, kids, caseid=kids$FinalPIN, verbose=TRUE, pctlim = 0.01,cap=4)
 
 kids$weights <- outsave_ak$weightvec
 
 
-write.csv(kids,"C:/Users/tsb7592/Downloads/kids.csv", row.names = FALSE)
+write.csv(kids,"C:/Users/tsb7592/Downloads/kids_April.csv", row.names = FALSE)
 ```
 
 ## 7b adults
@@ -147,9 +147,9 @@ names(rgtarg) <- c(1,2,3,4)
 
 targets <- list(rgtarg)
 names(targets) <- c("region")
-outsave_ab <- anesrake(targets, adult, caseid=adult$FinalPIN, verbose=TRUE, pctlim = 0.01)
+outsave_ab <- anesrake(targets, adult, caseid=adult$FinalPIN, verbose=TRUE, cap=4,pctlim = 0.01)
 
 adult2$weights.7b <- outsave_ab$weightvec
-write.csv(adult2,"C:/Users/tsb7592/Downloads/adults.csv", row.names = FALSE)
+write.csv(adult2,"C:/Users/tsb7592/Downloads/adults_April.csv", row.names = FALSE)
 ```
 
