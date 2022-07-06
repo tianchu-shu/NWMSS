@@ -1,0 +1,66 @@
+---
+title: "uc_regression"
+author: "Tianchu Shu"
+date: "1/27/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. Regressions: Conduct a series of regressions for each of the 10 scores for uncorrected scores only.
+
+```{r Load data}
+library(lme4)
+library(lmerTest)
+
+df= read.csv(file = 'C:/Users/tsb7592/Downloads/uc_over85.csv')
+
+```
+
+## 2. Model Comparison
+```{r UC}
+
+comp_models <- function(df, num) {
+df$race = as.factor(df$race)
+for (i in 1:num ){
+score = names(df)[i]
+
+print(score)
+f1 = paste(score, "AGE", sep='~')
+f2 = paste(score, "AGE + (1|site)", sep = '~')
+f3 = paste(score, "AGE + EDUCATION + MALE + race + (1|site)",sep = '~')
+m<-lm(f1, data=df)
+m2<-lmer(f2, data=df)
+m3<-lmer(f3, data=df)
+print(summary(m))
+print(summary(m2))
+print(summary(m3))
+print(AIC(m,m2))
+print(AIC(m,m3))
+print('\n')
+}
+}
+
+comp_models(df,10)
+```
+## 3. Emotion variables
+```{r emotion, echo=TRUE}
+emo= read.csv(file = 'C:/Users/tsb7592/Downloads/emo_over85.csv')
+comp_models(emo,20)
+```
+
+
+## 4. motor variables
+```{r motor, echo=TRUE}
+mt= read.csv(file = 'C:/Users/tsb7592/Downloads/motor_over85.csv')
+comp_models(mt, 6)
+```
+
+## 5.Sensation variables 
+```{r Sensation, echo=TRUE}
+ss= read.csv(file = 'C:/Users/tsb7592/Downloads/sensation_over85.csv')
+ss <- ss[,colSums(is.na(ss))<nrow(ss)]
+comp_models(ss,7)
+```
