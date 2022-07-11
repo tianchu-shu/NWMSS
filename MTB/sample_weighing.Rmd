@@ -1,7 +1,7 @@
 ---
 title: "sample weighing"
 author: "Tianchu Shu"
-date: "4/11/2022"
+date: "7/11/2022"
 output: pdf_document
 ---
 
@@ -14,142 +14,98 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r Load data}
 library(anesrake)
 
-df= read.csv(file ='C:/Users/tsb7592/Downloads/NIHTB_demoFinal_April.csv') # tianchu's path
+df= read.csv(file ='C:/Users/tsb7592/Downloads/NIHTB_demoFinal_July.csv') # tianchu's path
 
-adult <- df[df$age>=18, ]
-kids <- df[df$age<18, ]
-kids <- kids[kids$highestEd != 'missing',]
+child <- df[df$agegroup=='Child', ]
+youngadult <- df[df$agegroup=='YoungAdult', ]
+middleadult <- df[df$agegroup=='MiddleAdult', ]
+olderadult <- df[df$agegroup=='OlderAdult', ]
 
-adult$region.race.c <- factor(adult$region.race.c)
-kids$region.race.c <- factor(kids$region.race.c)
+#Factorize the three variables
+olderadult$region.sex <- factor(olderadult$region.sex)
+middleadult$region.sex <- factor(middleadult$region.sex)
+youngadult$region.sex <- factor(youngadult$region.sex)
+child$region.sex <- factor(child$region.sex)
 
-adult$highestEd <- factor(adult$highestEd)
-kids$highestEd <- factor(kids$highestEd)
-```
-## 7a adults
-```{r ad}
-sextarg <- c(.488, .512)
-rrtarg <- c(0.024, 0.111, 0.018, 0.012, 0.007, 0.005,
-            0.015, 0.151, 0.02, 0.007, 0.008, 0.001, 0.005,
-            0.062, 0.21, 0.065, 0.014, 0.015, 0.002, 0.001, 0.008,
-            0.062, 0.116, 0.01, 0.026, 0.015,  0.002, 0.007)
+olderadult$region.race <- factor(olderadult$region.race)
+middleadult$region.race <- factor(middleadult$region.race)
+youngadult$region.race <- factor(youngadult$region.race)
+child$region.race <- factor(child$region.race)
 
-rrtarg_v2 <- c(0.024, 0.111, 0.018, 0.012, 0.013,
-            0.015, 0.151, 0.02, 0.007, 0.008, 0.001, 0.005,
-            0.062, 0.21, 0.065, 0.014, 0.015, 0.002, 0.001, 0.008,
-            0.062, 0.116, 0.01, 0.026, 0.015,  0.002, 0.007)
+olderadult$highestEdu <- factor(olderadult$highestEdu)
+middleadult$highestEdu <- factor(middleadult$highestEdu)
+youngadult$highestEdu <- factor(youngadult$highestEdu)
+child$highestEdu <- factor(child$highestEdu)
 
-edutarg <- c(0.091, 0.241, 0.277, 0.391)
 
-names(sextarg) <- c("1.0", "2.0")
-names(rrtarg_v2) <-c("1.0-Any Hispanic",                     
-"1.0-Non-Hispanic White",               
-"1.0-Non-Hispanic Black",
-"1.0-Non-Hispanic Asian",
-"1.0-Non-Hispanic Other Single Race",
-"2.0-Any Hispanic",                     
-"2.0-Non-Hispanic White",               
-"2.0-Non-Hispanic Black",
-"2.0-Non-Hispanic Asian",
-"2.0-Non-Hispanic Other Single Race",
-"2.0-Non-Hispanic Biracial White/Black",
-"2.0-Non-Hispanic Other", 
-"3.0-Any Hispanic",                     
-"3.0-Non-Hispanic White",               
-"3.0-Non-Hispanic Black",
-"3.0-Non-Hispanic Asian",
-"3.0-Non-Hispanic Other Single Race",
-"3.0-Non-Hispanic Biracial White/Black",
-"3.0-Non-Hispanic Biracial White/Asian",
-"3.0-Non-Hispanic Other",   
-"4.0-Any Hispanic",                     
-"4.0-Non-Hispanic White",               
-"4.0-Non-Hispanic Black",
-"4.0-Non-Hispanic Asian",
-"4.0-Non-Hispanic Other Single Race",
-"4.0-Non-Hispanic Biracial White/Asian",
-"4.0-Non-Hispanic Other Multiracial")
-
-names(edutarg) <- c("less than high school graduate","high school graduate","some college","four year or higher degree" )
-
-targets <- list(sextarg, rrtarg_v2, edutarg)
-names(targets) <- c("sex", "region.race.c", 'highestEd')
-adult2 <- adult[complete.cases(adult),]
-
-outsave <- anesrake(targets, adult2, caseid=adult2$FinalPIN, verbose=TRUE, pctlim = 0.01,cap=4 )
-#caseweights <- data.frame(cases=outsave$caseid, weights=outsave$weightvec)
-adult2$weights.7a <- outsave$weightvec
-
-summary(outsave)
+parentedu <-c("less than high school graduate","high school graduate","some college",
+"four year or higher degree")
 ```
 
-## 7a. kids
-```{r kids, echo=TRUE}
+```{r function for calculating the weights}
+Calc_weights <- function(tar, data, edu) {
+#concate the region and target column to get the names
+#tar$name <- paste(tar$REGION, "-", tar$Target)
 
-sextarg <- c(.511, .489)
-rrtarg <- c(0.032, 0.078, 0.018, 0.011, 0.012, 0.003,0.002,0.004,
-            0.026, 0.125, 0.024, 0.007, 0.005, 0.002, 0.001, 0.023,
-            0.092, 0.158, 0.073, 0.013, 0.028, 0.008, 0.004, 0.001, 0.01,
-            0.091, 0.082, 0.009, 0.019, 0.003, 0.006, 0.030)
-edutarg <- c(0.115, 0.276, 0.303, 0.306)
+sextarg <-c(tar[tar$Characteristic=='SEX','Proportion'])
+rrtarg <- c(tar[tar$Characteristic=='raceEth','Proportion'])
+edutarg <- c(tar[grep("Ed", tar$Characteristic), 'Proportion'])
 
-names(sextarg) <- c("1", "2")
-names(rrtarg) <-c("1.0-Any Hispanic",                     
-"1.0-Non-Hispanic White",               
-"1.0-Non-Hispanic Black",
-"1.0-Non-Hispanic Asian",
-"1.0-Non-Hispanic Other Single Race",
-"1.0-Non-Hispanic Biracial White/Black",
-"1.0-Non-Hispanic Biracial White/Asian",
-"1.0-Non-Hispanic Other", 
-"2.0-Any Hispanic",                     
-"2.0-Non-Hispanic White",               
-"2.0-Non-Hispanic Black",
-"2.0-Non-Hispanic Asian",
-"2.0-Non-Hispanic Biracial White/Black",
-"2.0-Non-Hispanic Biracial White/Asian",
-"2.0-Non-Hispanic Biracial Black/Asian",
-"2.0-Non-Hispanic Other Multiracial", 
-"3.0-Any Hispanic",                     
-"3.0-Non-Hispanic White",               
-"3.0-Non-Hispanic Black",
-"3.0-Non-Hispanic Asian",
-"3.0-Non-Hispanic Other Single Race",
-"3.0-Non-Hispanic Biracial White/Black",
-"3.0-Non-Hispanic Biracial White/Asian",
-"3.0-Non-Hispanic Biracial Black/Asian",
-"3.0-Non-Hispanic Other Multiracial",   
-"4.0-Any Hispanic",                     
-"4.0-Non-Hispanic White",               
-"4.0-Non-Hispanic Black",
-"4.0-Non-Hispanic Asian",
-"4.0-Non-Hispanic Biracial White/Black",
-"4.0-Non-Hispanic Biracial White/Asian",
-"4.0-Non-Hispanic Other Multiracial")
+names(sextarg) <- c("1 - Female", "1 - Male", "2 - Female", "2 - Male", "3 - Female", "3 - Male", "4 - Female", "4 - Male")
+#list(tar[tar$Characteristic=='SEX','name'])
+names(rrtarg) <- c('1-Non-Hispanic Asian','1-Non-Hispanic Black', '1-Any Hispanic',
+       '1-Non-Hispanic Other','1-Non-Hispanic White',
+       '2-Non-Hispanic Asian', '2-Non-Hispanic Black', '2-Any Hispanic', 
+       '2-Non-Hispanic Other', '2-Non-Hispanic White', 
+       '3-Non-Hispanic Asian', '3-Non-Hispanic Black',
+       '3-Any Hispanic', '3-Non-Hispanic Other', '3-Non-Hispanic White', 
+       '4-Non-Hispanic Asian','4-Non-Hispanic Black','4-Any Hispanic',
+       '4-Non-Hispanic Other','4-Non-Hispanic White')
 
-names(edutarg) <- c("less than high school graduate","high school graduate","some college","four year or higher degree" )
+names(edutarg) <- edu
+#tar[tar$Characteristic=='SelfEd','Target']
 
 targets <- list(sextarg, rrtarg, edutarg)
-names(targets) <- c("sex", "region.race.c", 'highestEd')
+names(targets) <- c("region.sex", "region.race", 'highestEdu')
+outsave4 <- anesrake(targets, data, caseid=data$FinalPIN, verbose=TRUE, pctlim = 0.01,cap=4)
+data$weights4 <- outsave4$weightvec
 
-outsave_ak <- anesrake(targets, kids, caseid=kids$FinalPIN, verbose=TRUE, pctlim = 0.01,cap=4)
-
-kids$weights <- outsave_ak$weightvec
-
-
-write.csv(kids,"C:/Users/tsb7592/Downloads/kids_April.csv", row.names = FALSE)
+outsave <- anesrake(targets, data, caseid=data$FinalPIN, verbose=TRUE, pctlim = 0.01,cap=10)
+data$weights10 <- outsave$weightvec
+return(data)
+}
 ```
 
-## 7b adults
+## child
 ```{r ad}
-rgtarg <- c(.178, .207, .379, .236)
-names(rgtarg) <- c(1,2,3,4)
+ctarget= read.csv(file ='C:/Users/tsb7592/Downloads/ForJulyWeighting/ChildTargets.csv') 
+childw<-Calc_weights(ctarget,child, parentedu)
 
-targets <- list(rgtarg)
-names(targets) <- c("region")
-outsave_ab <- anesrake(targets, adult, caseid=adult$FinalPIN, verbose=TRUE, cap=4,pctlim = 0.01)
-
-adult2$weights.7b <- outsave_ab$weightvec
-write.csv(adult2,"C:/Users/tsb7592/Downloads/adults_April.csv", row.names = FALSE)
+write.csv(childw,"C:/Users/tsb7592/Downloads/child_weights.csv", row.names = FALSE)
 ```
 
+## YoungAdults
+```{r yound adults, echo=TRUE}
+ytarget= read.csv(file ='C:/Users/tsb7592/Downloads/ForJulyWeighting/YoungAdultTargets.csv') 
+
+selfedu <-c("less than high school graduate","high school graduate","some college",
+"Bachelors/4-year degree",'Advanced Degree')
+
+youndadw<-Calc_weights(ytarget,youngadult, selfedu)
+write.csv(youndadw,"C:/Users/tsb7592/Downloads/youngadults_weights.csv", row.names = FALSE)
+```
+
+## Middleadults
+```{r ad}
+mtarget= read.csv(file ='C:/Users/tsb7592/Downloads/ForJulyWeighting/MiddleAdultTargets.csv') 
+
+middleadw <- Calc_weights(mtarget,middleadult, selfedu)
+write.csv(middleadw,"C:/Users/tsb7592/Downloads/middleadults_weights.csv", row.names = FALSE)
+```
+## olderadults
+```{r ad}
+otarget= read.csv(file ='C:/Users/tsb7592/Downloads/ForJulyWeighting/OlderAdultTargets.csv') 
+
+olderadw <- Calc_weights(otarget, olderadult, selfedu)
+write.csv(olderadw,"C:/Users/tsb7592/Downloads/olderadults_weights.csv", row.names = FALSE)
+```
