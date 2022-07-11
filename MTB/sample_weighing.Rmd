@@ -51,16 +51,16 @@ sextarg <-c(tar[tar$Characteristic=='SEX','Proportion'])
 rrtarg <- c(tar[tar$Characteristic=='raceEth','Proportion'])
 edutarg <- c(tar[grep("Ed", tar$Characteristic), 'Proportion'])
 
-names(sextarg) <- c("1 - Female", "1 - Male", "2 - Female", "2 - Male", "3 - Female", "3 - Male", "4 - Female", "4 - Male")
+names(sextarg) <- c("1-Female", "1-Male", "2-Female", "2-Male", "3-Female", "3-Male", "4-Female", "4-Male")
 #list(tar[tar$Characteristic=='SEX','name'])
-names(rrtarg) <- c('1-Non-Hispanic Asian','1-Non-Hispanic Black', '1-Any Hispanic',
-       '1-Non-Hispanic Other','1-Non-Hispanic White',
-       '2-Non-Hispanic Asian', '2-Non-Hispanic Black', '2-Any Hispanic', 
-       '2-Non-Hispanic Other', '2-Non-Hispanic White', 
-       '3-Non-Hispanic Asian', '3-Non-Hispanic Black',
-       '3-Any Hispanic', '3-Non-Hispanic Other', '3-Non-Hispanic White', 
-       '4-Non-Hispanic Asian','4-Non-Hispanic Black','4-Any Hispanic',
-       '4-Non-Hispanic Other','4-Non-Hispanic White')
+names(rrtarg) <- c('1-AsianAmerican','1-Black', '1-Hispanic',
+       '1-Other','1-White',
+       '2-AsianAmerican', '2-Black', '2-Hispanic', 
+       '2-Other', '2-White', 
+       '3-AsianAmerican', '3-Black',
+       '3-Hispanic', '3-Other', '3-White', 
+       '4-AsianAmerican','4-Black','4-Hispanic',
+       '4-Other','4-White')
 
 names(edutarg) <- edu
 #tar[tar$Characteristic=='SelfEd','Target']
