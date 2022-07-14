@@ -18,6 +18,11 @@ df= read.csv(file ='C:/Users/tsb7592/Downloads/NIHTB_demoFinal_July.csv') # tian
 
 child <- df[df$agegroup=='Child', ]
 youngadult <- df[df$agegroup=='YoungAdult', ]
+
+df$region.race <- gsub("2-Other", "all-Other", df$region.race)
+df$region.race <- gsub("3-Other", "all-Other", df$region.race)
+df$region.race <- gsub("4-Other", "all-Other", df$region.race)
+
 middleadult <- df[df$agegroup=='MiddleAdult', ]
 olderadult <- df[df$agegroup=='OlderAdult', ]
 
@@ -38,8 +43,7 @@ youngadult$highestEdu <- factor(youngadult$highestEdu)
 child$highestEdu <- factor(child$highestEdu)
 
 
-parentedu <-c("less than high school graduate","high school graduate","some college",
-"four year or higher degree")
+parentedu <-c("less than high school graduate","high school graduate","some college","four year or higher degree")
 ```
 
 ```{r function for calculating the weights}
@@ -76,7 +80,7 @@ return(data)
 }
 ```
 
-## child
+##1 child
 ```{r ad}
 ctarget= read.csv(file ='C:/Users/tsb7592/Downloads/ForJulyWeighting/ChildTargets.csv') 
 childw<-Calc_weights(ctarget,child, parentedu)
@@ -84,7 +88,7 @@ childw<-Calc_weights(ctarget,child, parentedu)
 write.csv(childw,"C:/Users/tsb7592/Downloads/child_weights.csv", row.names = FALSE)
 ```
 
-## YoungAdults
+##2 YoungAdults
 ```{r yound adults, echo=TRUE}
 ytarget= read.csv(file ='C:/Users/tsb7592/Downloads/ForJulyWeighting/YoungAdultTargets.csv') 
 
@@ -94,18 +98,51 @@ selfedu <-c("less than high school graduate","high school graduate","some colleg
 youndadw<-Calc_weights(ytarget,youngadult, selfedu)
 write.csv(youndadw,"C:/Users/tsb7592/Downloads/youngadults_weights.csv", row.names = FALSE)
 ```
+```{r}
+Calc_weights_adults <- function(tar, data, edu) {
+#concate the region and target column to get the names
+tar$name <- paste(tar$REGION, "-", tar$Target)
 
-## Middleadults
+sextarg <-c(tar[tar$Characteristic=='SEX','Proportion'])
+rrtarg <- c(tar[tar$Characteristic=='raceEth','Proportion'])
+edutarg <- c(tar[grep("Ed", tar$Characteristic), 'Proportion'])
+
+names(sextarg) <- c("1-Female", "1-Male", "2-Female", "2-Male", "3-Female", "3-Male", "4-Female", "4-Male")
+
+names(rrtarg) <- c('1-AsianAmerican','1-Black', '1-Hispanic',  'all-Other','1-White',
+       '2-AsianAmerican', '2-Black', '2-Hispanic', 
+        '2-White',  '3-AsianAmerican', '3-Black',
+       '3-Hispanic', '3-White','4-AsianAmerican',
+       '4-Black','4-Hispanic','4-White')
+
+names(edutarg) <- edu
+print(rrtarg)
+
+targets <- list(sextarg, rrtarg, edutarg)
+names(targets) <- c("region.sex", "region.race", 'highestEdu')
+outsave4 <- anesrake(targets, data, caseid=data$FinalPIN, verbose=TRUE, pctlim = 0.01,cap=4)
+data$weights4 <- outsave4$weightvec
+
+outsave <- anesrake(targets, data, caseid=data$FinalPIN, verbose=TRUE, pctlim = 0.01,cap=10)
+data$weights10 <- outsave$weightvec
+return(data)
+}
+```
+
+##3 Middleadults
 ```{r ad}
-mtarget= read.csv(file ='C:/Users/tsb7592/Downloads/ForJulyWeighting/MiddleAdultTargets.csv') 
+mtarget= read.csv(file='C:/Users/tsb7592/Downloads/ForJulyWeighting/MiddleAdultTargets.csv') 
 
-middleadw <- Calc_weights(mtarget,middleadult, selfedu)
+
+selfedu <- c( "less than high school graduate", "high school graduate",           
+              "some college" ,  "Bachelors/4-year degree" , "Advanced Degree")   
+middleadw <- Calc_weights_adults(mtarget,middleadult, selfedu)
 write.csv(middleadw,"C:/Users/tsb7592/Downloads/middleadults_weights.csv", row.names = FALSE)
 ```
 ## olderadults
 ```{r ad}
 otarget= read.csv(file ='C:/Users/tsb7592/Downloads/ForJulyWeighting/OlderAdultTargets.csv') 
 
-olderadw <- Calc_weights(otarget, olderadult, selfedu)
+olderadw <- Calc_weights_adults(otarget, olderadult, selfedu)
 write.csv(olderadw,"C:/Users/tsb7592/Downloads/olderadults_weights.csv", row.names = FALSE)
 ```
